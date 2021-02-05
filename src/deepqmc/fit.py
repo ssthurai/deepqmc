@@ -74,6 +74,7 @@ def fit_wf(  # noqa: C901
     opt,
     sampler,
     steps,
+    mol=None,
     writer=None,
     log_dict=None,
     require_energy_gradient=False,
@@ -134,6 +135,8 @@ def fit_wf(  # noqa: C901
             max_memory=max_memory,
         )
         log.info(f'estimated optimal subbatch size: {subbatch_size}')
+    if mol and sampler.mol != mol:
+        log.warning(f'Molecule for sampling and evaluation do not match!')
     for step, (rs, log_psi0s, sign_psi0s) in zip(steps, sampler):
         rs_batch = rs
         opt.zero_grad()
@@ -146,6 +149,7 @@ def fit_wf(  # noqa: C901
                 Es_loc, log_psis, sign_psis = local_energy(
                     rs,
                     wf.sample(False),
+                    mol=mol,
                     create_graph=require_energy_gradient,
                     keep_graph=require_psi_gradient,
                 )
